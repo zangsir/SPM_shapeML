@@ -1,20 +1,20 @@
 ##################### utility functions
-preprocessTone<-function(toneData){
+preprocessToneTrigram<-function(toneData){
   #cast everything as factor as it should be
-  for (k in 10:38){
+  for (k in 6:18){
     toneData[,k]<-as.factor(toneData[,k])
   }
-  toneSub<-cleanZeroVar(toneData,toneData$pos2,'pos2')
+  #toneSub<-cleanZeroVar(toneData,toneData$pos2,'pos2')
   #table(toneSub$pos2)
-  toneSub<-cleanZeroVar(toneSub,toneSub$pos1,'pos1')
+  toneSub<-cleanZeroVar(toneData,toneData$pos1,'pos1')
   #table(toneSub$pos1)
-  toneSub<-cleanZeroVar(toneSub,toneSub$pos3,'pos3')
+  #toneSub<-cleanZeroVar(toneSub,toneSub$pos3,'pos3')
   #table(toneSub$pos3)
-  toneSub<-cleanZeroVar(toneSub,toneSub$func2,'func2')
+  #toneSub<-cleanZeroVar(toneSub,toneSub$func2,'func2')
   #table(toneSub$func2)
   toneSub<-cleanZeroVar(toneSub,toneSub$func1,'func1')
   #table(toneSub$func1)
-  toneSub<-cleanZeroVar(toneSub,toneSub$func3,'func3')
+  #toneSub<-cleanZeroVar(toneSub,toneSub$func3,'func3')
   #table(toneSub$func3)
   #try<-cleanRare(toneData,toneData$next_tone,'next_tone')
   
@@ -28,6 +28,33 @@ preprocessTone<-function(toneData){
   return(toneSub)
 }
 
+
+preprocessToneBigram<-function(toneData){
+  #cast everything as factor as it should be
+  for (k in 6:18){
+    toneData[,k]<-as.factor(toneData[,k])
+  }
+  #toneSub<-cleanZeroVar(toneData,toneData$pos2,'pos2')
+  #table(toneSub$pos2)
+  toneSub<-cleanZeroVar(toneSub,toneSub$pos1,'pos1')
+  #table(toneSub$pos1)
+
+  #toneSub<-cleanZeroVar(toneSub,toneSub$func2,'func2')
+  #table(toneSub$func2)
+  toneSub<-cleanZeroVar(toneSub,toneSub$func1,'func1')
+  #table(toneSub$func1)
+  #table(toneSub$func3)
+  #try<-cleanRare(toneData,toneData$next_tone,'next_tone')
+  
+  toneSub<-cleanZeroVar(toneSub,toneSub$next_tone,'next_tone')
+  toneSub<-cleanZeroVar(toneSub,toneSub$prev_tone,'prev_tone')
+  
+  #toneSub[toneSub$next_tone=='6',]$next_tone='-1'
+  #toneSub$next_tone<-droplevels(toneSub$next_tone)
+  #toneSub[toneSub$prev_tone=='6',]$prev_tone='-1'
+  #toneSub$prev_tone<-droplevels(toneSub$prev_tone)
+  return(toneSub)
+}
 
 featImp<-function(toneSub){
   
@@ -89,4 +116,5 @@ dosvm<-function(toneSub1){
   
   cat('upper:',as.character(cf$overall[4]))
   cat('\n')
+  return(cf$overall[1])
 }

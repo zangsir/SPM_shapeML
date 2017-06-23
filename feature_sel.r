@@ -4,15 +4,17 @@
 
 
 # ensure the results are repeatable
+#this correlation matrix can be only applied to numeric attributes.so it doesn't apply to us.
 set.seed(7)
 # load the library
 library(mlbench)
 library(caret)
 # load the data
 data(PimaIndiansDiabetes)
-str(PimaIndianDiabetes)
+#str(PimaIndianDiabetes)
 # calculate correlation matrix
 correlationMatrix <- cor(PimaIndiansDiabetes[,1:8])
+#correlationMatrix <- cor(toneSub[,1:37])
 # summarize the correlation matrix
 print(correlationMatrix)
 # find attributes that are highly corrected (ideally >0.75)
@@ -43,7 +45,7 @@ plot(importance)
 
 #######################################
 #adapting to tone data
-setwd('~/Desktop/cmn_mapping/')
+setwd('~/Desktop/thesis_components/cmn_mapping/')
 tone134<-read.csv('downsample_syl_3_meta_200_134_.csv',header=TRUE)
 head(tone134)
 str(tone134)

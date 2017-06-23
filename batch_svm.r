@@ -1,71 +1,93 @@
 library(mlbench)
 library(caret)
 library(e1071)
-setwd('~/Desktop/cmn_mapping/')
+library(reshape)
+setwd('~/Desktop/cmn_mapping/feature_files/')
 
 #tone134<-read.csv('downsample_syl_3_meta_200_134_.csv',header=TRUE)
 #head(tone134)
 #str(tone134)
 
-source('util_functions.r')
-
-temp = list.files(pattern="*_.csv")
+source('../cmn_map_rFiles/util_functions.r')
+labels=c()
+accuracies=c()
+acc2<-c()
+acc3<-c()
+baseLines=c()
+temp = list.files(pattern="*.csv")
 #myfiles = lapply(temp, read.delim)
 #currently we start from i=2 b/c i=1 is is 134 we've done that already
 for (i in 1:length(temp)) {
   cat(temp[i])
+  cat('\n')
   tones=read.csv(temp[i],header=TRUE)
   #str(toneData)
-  tones<-preprocessTone(tones)
-  
-  
+  if(ncol(tones)==28){
+  tones<-preprocessToneBigram(tones)
+  }
+  else{tones<-preprocessToneTrigram(tones)}
+  #base<-length(levels(tones$label))
+  baseline<-1/(nlevels(tones$label))
+  baseLines<-c(baseLines,baseline)
+  cat('baseline:',1/base)
   ###########svm
-  #create a subset of features
-  dosvm(tones)
-  #no pos
-  cat("============no pos\n")
-  toneSub1<-tones[c(4:38)]
-  dosvm(toneSub1)
   #no func/pos
+  if(ncol(tones)==38){
   cat("============no fun/pos\n")
   toneSub1<-tones[c(7:38)]
-  dosvm(toneSub1)
-  
-  cat("============no entity/singleton\n")
-  toneSub1<-tones[c(7:9,11:13,15:38)]
-  dosvm(toneSub1)
+  #dosvm(toneSub1)
+  accuracy<-dosvm(toneSub1)
   
   cat("============no entity\n")
   toneSub1<-tones[c(7:9,11:38)]
-  dosvm(toneSub1)
+  acc_noent<-dosvm(toneSub1)
+  #dosvm(toneSub1)
   
   cat("============no singleton\n")
   toneSub1<-tones[c(7:13,15:38)]
-  dosvm(toneSub1)
+  #dosvm(toneSub1)
+  acc_nosing<-dosvm(toneSub1)
+  }
+  else{  cat("============no fun/pos\n")
+    toneSub1<-tones[c(3:18)]
+    #dosvm(toneSub1)
+    accuracy<-dosvm(toneSub1)
+    
+    cat("============no entity\n")
+    toneSub1<-tones[c(3:5,7:18)]
+    #dosvm(toneSub1)
+    acc_noent<-dosvm(toneSub1)
+    
+    cat("============no singleton\n")
+    toneSub1<-tones[c(3:7,9:18)]
+    #dosvm(toneSub1)
+    acc_nosing<-dosvm(toneSub1)
+    }
+  label<-strsplit(temp[i],'_')[[1]][1]
+  #label<-strsplit(prefix,'00_')[[1]][2]
+  labels=c(labels,label)
+  accuracies=c(accuracies,accuracy)
+  acc2<-c(acc2,acc_noent)
+  acc3<-c(acc3,acc_nosing)
   
-  cat("============no tok-bound\n")
-  toneSub1<-tones[c(7:10,14:38)]
-  dosvm(toneSub1)
-  
-  cat("============no phons\n")
-  toneSub1<-tones[c(7:14,35:38)]
-  dosvm(toneSub1)
-  
-  #no sent position
-  cat("============no sent position\n")
-  toneSub1<-tones[c(7,8,10:38)]
-  dosvm(toneSub1)
-  #feature set: without pos,func, prev,next,sent_pos 62.27, best so far
-  cat("============no prev, next tone\n")
-  toneSub1<-tones[c(7,8,10:35,38)]
-  dosvm(toneSub1)
-  #removing rounding is not good:
-  #toneSub1<-toneSub[c(7,8,10:34,38)]
-  #include prev next tone:61.82
+
   
   cat('************************************\n')
   
   
 }
 
+accuracy_noEntity<-acc2
+accuracy_noSingleton<-acc3
 
+data<-data.frame(labels,accuracies,accuracy_noEntity,accuracy_noSingleton,baseLines)
+#plot(labels,accuracies, data=data)
+#barplot(t(as.matrix(data)), beside=TRUE)
+#library(ggplot2)
+#geom_bar(aes(labels,accuracies))+geom_bar(data=data)
+
+
+#barplot(data$accuracies, names = data$labels,xlab = "tone N-gram", ylab = "accuracy",main = "classification accuracy of tone Ngram shapes")
+data.m <- melt(data, id.vars='labels')
+ggplot(data.m, aes(labels, value)) +   
+  geom_bar(aes(fill = variable), position = "dodge", stat="identity")
